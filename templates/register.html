@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block title %}Register{% endblock %}
+
+{% block main %}
+
+
+    <div class="row justify-content-center" >
+        <div class="form-wrapper | col">
+            <h2>Register</h2>
+            <form action="/register" method="post">
+                <div class="my-4" >
+                    <input type="text" name="username" id="username" placeholder="Username" autocomplete="off" autofocus>
+                </div>
+                <div class="my-4" >
+                    <input type="password" name="password" id="password" placeholder="Password">
+                </div>
+                <div class="my-4" >
+                    <input type="password" name="confirmation" id="confirmation" placeholder="Confirm Password">
+                </div>
+                <button class="button" type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

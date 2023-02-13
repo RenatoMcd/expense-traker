@@ -1,0 +1,20 @@
+{% extends "layout.html" %}{% block title %}Log In{% endblock %}
+
+{% block main %}
+
+    <div class="row" >
+        <div class="form-wrapper | col">
+            <h2>Login</h2>
+            <form action="/login" method="post">
+                <div class="my-4">
+                    <input type="text" name="username" id="username" placeholder="Username" autocomplete="off" autofocus>
+                </div>
+                <div class="my-4">
+                    <input type="password" name="password" id="password" placeholder="Password">
+                </div>
+                <button class="button" type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

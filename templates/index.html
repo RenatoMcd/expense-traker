@@ -1,0 +1,303 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+<!-- Balance graph -->
+
+<div class="row">
+  <div class="totals | col-2">
+    <div class="balance">
+      <h3>Balance</h3>
+      <p>{{ balance | eur }}</p>
+    </div>
+    <div class="income">
+      <h3>Income</h3>
+      <p>{{ tot_inc | eur }}</p>
+    </div>
+    <div class="expenses">
+      <h3>Expenses</h3>
+      <p>{{ tot_exp | eur }}</p>
+    </div>
+    <div class="month-filter">
+      <form action="/" method="post">
+        <input name="date" id="date" type="text" placeholder="Filter by Month" onfocus="(this.type='month')" onblur="(this.type='text')" lang="en" onchange="this.form.submit()" value="{{ date }}">
+      </form>
+      <a href="/" class="reset-button | btn btn-primary">Reset</a>
+    </div>
+  </div>
+
+  <div class="expenses-chart-wrapper | col-4"> 
+    <h2>Expenses</h2>
+    {% if tot_exp == 0 %}
+    <p>Add your first expense</p>
+    {% else %}
+    <canvas id="expenses-chart"></canvas>
+    {% endif %}
+    <!-- Button trigger modal -->
+    <button type="button" class="btn-expense | btn btn-primary" data-bs-toggle="modal" data-bs-target="#addExpense">
+      Add Expense
+    </button>
+
+    <!-- Add Expense Modal -->
+    <div class="modal fade" id="addExpense" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-titlemodal-btn | " id="exampleModalLabel">Add Expense</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form action="/add-expense" method="post">
+                  <div class="m-2">
+                      <span>Category</span>
+                      <select name="category" id="category">
+                          <option disabled selected>Category</option>
+                          {% for category in categories %}
+                              <option value="{{ category }}">{{ category }}</option>
+                          {% endfor %}
+
+                      </select>
+                  </div>
+                  <div class="m-2">
+                    <span>Date</span>
+                    <input name="date" type="date">
+                  </div>
+                  <div class="m-2">
+                      <span>Description</span>
+                      <input name="description" type="text">
+                  </div>
+                  <div class="m-2">
+                      <span>Amount</span>
+                      <input name="amount" type="number" step=".01" min="0">
+                  </div>
+                  <button type="submit" class="modal-btn | btn btn-primary">Add Expense</button>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn-income | btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIncome">
+      Add Income
+    </button>
+
+    <!-- Add Income Modal -->
+    <div class="modal fade" id="addIncome" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Add Income</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <form action="/add-income" method="post">
+                  <div class="m-2">
+                      <span>Category</span>
+                      <select name="category" id="category">
+                          <option disabled selected>Category</option>
+                          {% for category in income %}
+                              <option value="{{ category }}">{{ category }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div class="m-2">
+                    <span>Date</span>
+                    <input name="date" type="date">
+                  </div>
+                  <div class="m-2">
+                      <span>Description</span>
+                      <input name="description" type="text">
+                  </div>
+                  <div class="m-2">
+                      <span>Amount</span>
+                      <input name="amount" type="number" step=".01" min="0">
+                  </div>
+                  <button type="submit" class="modal-btn | btn btn-primary">Add Income</button>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="expense-table | col">
+    {% if tot_exp == 0 and tot_inc = 0 %}
+    <p>No data to present</p>
+    {% else %}    
+    <table class="table table-striped sortable">
+      <thead class="table-head | sticky-top">
+        <tr>
+          <!-- <th scope="col">Id</th> -->
+          <th scope="col" class="date">Date</th>
+          <th scope="col">Category</th>
+          <th scope="col" class="action">Action</th>
+          <th scope="col" class="description">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movement in movements %}
+        <tr>
+          <!-- <td>{{ movement["movement_id"] }}</td> -->
+          <td class="date">{{ movement["date"] }}</td>
+          <td>{{ movement["category"] }}</td>
+          <td class="action">{{ movement["action"] }}</td>
+          <td class="description">{{ movement["description"] }}</td>
+          <td>{{ movement["amount"] | eur }}</td>
+          <td>
+            {% if movement["action"] == "income" %}
+              <a href="#editIncome" class="edit-btn | btn btn-success" data-bs-toggle="modal" data-bs-target="#editIncome" data-bs-id="{{ movement['movement_id'] }}"><i class="fa-solid fa-pen-to-square"></i></a>
+              
+              <!-- Edit income Modal -->
+              <div class="modal fade" id="editIncome" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Edit Income</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form action="/edit-income" method="post">                           
+                        <input type="hidden" name="m_id" id="movement_id">
+                        <div class="m-2">
+                          <span>Category</span>
+                          <select name="category" id="category" >
+                            <option disabled selected>Category</option>
+                            {% for category in income %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="m-2">
+                          <span>Date</span>
+                          <input name="date" type="date">
+                        </div>
+                        <div class="m-2">
+                            <span>Description</span>
+                            <input name="description" type="text" >
+                        </div>
+                        <div class="m-2">
+                            <span>Amount</span>
+                            <input name="amount" type="number" step=".01" min="0">
+                        </div>
+                        <button type="submit" class="modal-btn | btn btn-primary">Edit Income</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <a href="#editExpense" class="edit-btn | btn btn-success" data-bs-toggle="modal" data-bs-target="#editExpense" data-bs-id="{{ movement['movement_id'] }}"><i class="fa-solid fa-pen-to-square"></i></a>
+              <!-- Edit Expense Modal -->
+              <div class="modal fade" id="editExpense" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="exampleModalLabel">Edit Expense</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form action="/edit-expense" method="post">                           
+                        <input type="hidden" name="m_id" id="movement_id">
+                        <div class="m-2">
+                          <span>Category</span>
+                          <select name="category" id="category" >
+                            <option disabled selected>Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="m-2">
+                          <span>Date</span>
+                          <input name="date" type="date" >
+                        </div>
+                        <div class="m-2">
+                            <span>Description</span>
+                            <input name="description" type="text" >
+                        </div>
+                        <div class="m-2">
+                            <span>Amount</span>
+                            <input name="amount" type="number" step=".01" min="0">
+                        </div>
+                        <button type="submit" class="modal-btn | btn btn-primary">Edit Expense</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('delete', id=movement['movement_id'], amount=movement['amount'] )}}" class="delete-btn | btn btn-danger"><i class="fa-solid fa-trash"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const editIncome = document.getElementById('editIncome')
+  editIncome.addEventListener('show.bs.modal', event => {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    const movementID = button.getAttribute('data-bs-id')
+    // Update the modal's content.
+    const modalIDInput = editIncome.querySelector('#movement_id')
+
+    modalIDInput.value = movementID
+  })
+  
+  
+  const editExpense = document.getElementById('editExpense')
+  editExpense.addEventListener('show.bs.modal', event => {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    const movementID = button.getAttribute('data-bs-id')
+    // Update the modal's content.
+    const modalIDInput = editExpense.querySelector('#movement_id')
+
+    modalIDInput.value = movementID
+  })
+</script>
+
+<script>
+  
+  const ctx = document.getElementById('expenses-chart').getContext('2d');
+
+  const labels = JSON.parse('{{ labels | tojson }}');
+  const amount = JSON.parse('{{ data | tojson }}');
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.values(labels),
+      datasets: [{
+        label: '€ Spent',
+        data: Object.values(amount),
+        backgroundColor: ["#f94144", "#F3722C", "#F8961E", "#F9C74F", "#90BE6D", "#43AA8B", "#4D908E", "#577590", "#277DA1", "#175C77",  "#073b4c", "#590D22", "#A4133C", "#FF4D6D", "#FC6874", "#FF8FA3", "#AEADF0"],
+        borderColor: "#e1f2f0",
+      }],
+    },
+    options: {
+      responsive: true
+    }
+  });
+
+</script>
+{% endblock %}
